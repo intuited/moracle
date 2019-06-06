@@ -1,13 +1,13 @@
 ## mtgcardtext ##
 
-CLI to format Magic: the Gathering card text.
+CLI to format Magic: the Gathering card text.  Probably not something you need unless you are the sort of person who enjoys building deck lists in `vim` or another text editor.  Particularly useful for EDH decks.
 
 Primary usage is to spit out one-line summaries of card text:
 
     $ PYTHONPATH=~/src python3 mtgcardtext Counterspell
     Counterspell: [UU] I Counter target spell.
 
-By default it truncates rules text at 120 characters.  This can be changed.
+By default it truncates the text at a maximum of 120 characters.  This can be changed.
 
     $ PYTHONPATH=~/src python3 mtgcardtext -t80 'Polluted Delta'
     Polluted Delta: L {T}, Pay 1 life, Sacrifice Polluted Delta: Search your library
@@ -29,9 +29,15 @@ Passing the `-f` command line option will cause full-form text to be output inst
 
 Card names must be given in full; no particular case is required.
 
+The `-t` option does not currently work in combination with `-f`.
+
 If no card names are passed on the command line, card names will be read from standard input, one line at a time.
 
-The card database from [mtgjson](https://mtgjson.com/#our-mission) is used.  It can be updated by supplying a database file.
+### Initializing/Updating the DB ###
+
+The card database from [mtgjson](https://mtgjson.com/#our-mission) is used.
+
+It can be initialized or updated by supplying a database file.
 
     $ curl -O 'https://mtgjson.com/json/AllCards.json.zip'
       % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
@@ -39,3 +45,5 @@ The card database from [mtgjson](https://mtgjson.com/#our-mission) is used.  It 
     100 21.0M  100 21.0M    0     0  1503k      0  0:00:14  0:00:14 --:--:-- 2352k
     $ PYTHONPATH=~/src python3 -m mtgcardtext -u AllCards.json.zip
     Internal database updated from file "AllCards.json.zip".
+
+You'll need to do this before you can use `mtgcardtext`.
