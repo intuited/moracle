@@ -31,7 +31,7 @@ Output should be mostly self-explanatory.
 
 `RULES` is the rules text
 
-Passing the `-f` command line option will cause full-form text to be output instead of single-line format.
+Passing the `-f` command line option will cause full-form text to be output instead of single-line format.  Newlines in the rules text are retained, and the overall layout is similar to that of an actual card.
 
     ~/src $ PYTHONPATH=~/src python3 mtgcardtext -f 'ePhaRa, GoD oF thE pOliS'
     Ephara, God of the Polis: {2}{W}{U}
