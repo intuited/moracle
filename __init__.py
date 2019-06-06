@@ -40,7 +40,7 @@ def abbrev_manacost(cost):
 def format_oneline(card, text_crop=120):
     """Format the card data for a 1-line presentation.
 
-    The 'text' field is cropped at a maximum of `text_crop` characters.
+    The result is cropped at a maximum of `text_crop` characters.
     Newlines in the rules text are converted to tabs.
     """
     components = []
@@ -54,9 +54,9 @@ def format_oneline(card, text_crop=120):
     if 'loyalty' in card.keys():
         components.append('L:' + card['loyalty'])
 
-    components.append(card['text'][0:text_crop].replace('\n', '\t'))
+    components.append(card['text'].replace('\n', '\t'))
 
-    return ' '.join(components)
+    return ' '.join(components)[0:text_crop]
 
 def format_full(card, text_crop=0):
     components = []
@@ -105,7 +105,7 @@ def cli():
                         help="Output full card text rather than one-line info.")
     parser.add_argument('-t', '--textlength', action='store', dest='textlength',
                         type=int, default=120,
-                        help="Crop rules text at TEXTLENGTH characters. (120)")
+                        help="Max line length of TEXTLENGTH characters. (120)")
     parser.add_argument('cards', nargs='*', action='store',
                         help="If -u not specified and no cards given, "
                            + "cards will be read from stdin.")
