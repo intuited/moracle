@@ -4,13 +4,16 @@ operation modes
     args: outputs info for card names passed as command line arguments.
 
 options
-    -u: update the stored card DB
+    -u FILE: update the stored card DB from the provided DB file
     -f: print full card info rather than one-line summaries
     -tX: text field cropped at a maximum of X characters (default 120)
     -: reads card names from stdin and outputs one-line formatted card info for each
 """
+from os import path
 
-DEFAULT_DB_LOCATION = "./AllCards.json"
+INSTALL_DIR = path.dirname(path.abspath(__file__))
+DEFAULT_DB_LOCATION = INSTALL_DIR + "/AllCards.json"
+DB_ZIP_CONTENT = 'AllCards.json'
 
 def load_db(db_path=DEFAULT_DB_LOCATION):
     from json import load
@@ -67,16 +70,32 @@ def format_oneline(card, text_crop=120):
 def format_full(card, text_crop=0):
     raise NotImplementedError("Full formatting not yet implemented.")
 
-def update_db():
-    """Update the card database from mtgjson."""
-    raise NotImplementedError("Update functionality not yet implemented")
+def update_db(source_path):
+    """Update the card database from a provided DB file.
+
+    The provided db file can be zipped or not.
+    """
+    from zipfile import ZipFile
+    import json
+
+    if source_path[-4:] == '.zip':
+        with ZipFile(source_path) as z:
+            db = json.loads(z.read(DB_ZIP_CONTENT))
+    else:
+        with open(source_path) as f:
+            db = json.load(f)
+
+    lowerdb = dict((key.lower(), value) for key, value in db.items())
+
+    with open(DEFAULT_DB_LOCATION, 'w') as out:
+        json.dump(lowerdb, out)
 
 def cli():
-    from argparse import ArgumentParser
+    from argparse import ArgumentParser, FileType
     from fileinput import input
 
     parser = ArgumentParser(description=__doc__)
-    parser.add_argument('-u', '--update', action='store_true', dest='update')
+    parser.add_argument('-u', '--update', dest='update')
     parser.add_argument('-f', '--full', action='store_const', const=format_full,
                         default=format_oneline, dest='formatter')
     parser.add_argument('-t', '--textlength', action='store', dest='textlength',
@@ -86,7 +105,7 @@ def cli():
     args = parser.parse_args()
 
     if args.update:
-        update_db()
+        update_db(args.update)
     else:
         if args.cards:
             cards = args.cards
@@ -96,7 +115,7 @@ def cli():
         db = load_db()
 
         for card in cards:
-            print(args.formatter(db[card], args.textlength))
+            print(args.formatter(db[card.lower()], args.textlength))
 
 if __name__ == '__main__':
     cli()
