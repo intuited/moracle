@@ -1,13 +1,4 @@
-"""mtgcardtext: formats info from the mtgjasn repo for human use
-
-operation modes
-    args: outputs info for card names passed as command line arguments.
-
-options
-    -u FILE: update the stored card DB from the provided DB file
-    -f: print full card info rather than one-line summaries
-    -tX: text field cropped at a maximum of X characters (default 120)
-    -: reads card names from stdin and outputs one-line formatted card info for each
+"""Format info from the mtgjson repo for human use.
 """
 from os import path
 
@@ -95,12 +86,17 @@ def cli():
     from fileinput import input
 
     parser = ArgumentParser(description=__doc__)
-    parser.add_argument('-u', '--update', dest='update')
+    parser.add_argument('-u', '--update', dest='update',
+                        help="Import DB file UPDATE as .zip or .json")
     parser.add_argument('-f', '--full', action='store_const', const=format_full,
-                        default=format_oneline, dest='formatter')
+                        default=format_oneline, dest='formatter',
+                        help="Output full card text rather than one-line info.")
     parser.add_argument('-t', '--textlength', action='store', dest='textlength',
-                        type=int, default=120)
-    parser.add_argument('cards', nargs='*', action='store')
+                        type=int, default=120,
+                        help="Crop rules text at TEXTLENGTH characters. (120)")
+    parser.add_argument('cards', nargs='*', action='store',
+                        help="If -u not specified and no cards given, "
+                           + "cards will be read from stdin.")
 
     args = parser.parse_args()
 
