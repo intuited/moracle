@@ -1,16 +1,13 @@
 """mtgcardtext: formats info from the mtgjasn repo for human use
 
 operation modes
-    help: spits out syntax info
-    transform: reads card names, one per line, and outputs one-line formatted card info for each
     args: outputs info for card names passed as command line arguments.
-      -f: output full info for each card rather than the default one-line format
-    update: gets a new copy of the db and saves it wherever it saves the db.
 
 options
-    -i: names read from stdin or args are not case sensitive
-    -f: print full info for card names passed in args mode
+    -u: update the stored card DB
+    -f: print full card info rather than one-line summaries
     -tX: text field cropped at a maximum of X characters (default 120)
+    -: reads card names from stdin and outputs one-line formatted card info for each
 """
 
 DEFAULT_DB_LOCATION = "./AllCards.json"
@@ -53,6 +50,7 @@ def format_oneline(card, text_crop=120):
     Newlines in the rules text are converted to tabs.
     """
     components = []
+
     components.append(card['name'] + ':')
     if 'manaCost' in card.keys():
         components.append('[' + abbrev_manacost(card['manaCost']) + ']')
@@ -65,3 +63,40 @@ def format_oneline(card, text_crop=120):
     components.append(card['text'][0:text_crop].replace('\n', '\t'))
 
     return ' '.join(components)
+
+def format_full(card, text_crop=0):
+    raise NotImplementedError("Full formatting not yet implemented.")
+
+def update_db():
+    """Update the card database from mtgjson."""
+    raise NotImplementedError("Update functionality not yet implemented")
+
+def cli():
+    from argparse import ArgumentParser
+    from fileinput import input
+
+    parser = ArgumentParser(description=__doc__)
+    parser.add_argument('-u', '--update', action='store_true', dest='update')
+    parser.add_argument('-f', '--full', action='store_const', const=format_full,
+                        default=format_oneline, dest='formatter')
+    parser.add_argument('-t', '--textlength', action='store', dest='textlength',
+                        type=int, default=120)
+    parser.add_argument('cards', nargs='*', action='store')
+
+    args = parser.parse_args()
+
+    if args.update:
+        update_db()
+    else:
+        if args.cards:
+            cards = args.cards
+        else:
+            cards = (line.strip() for line in input())
+
+        db = load_db()
+
+        for card in cards:
+            print(args.formatter(db[card], args.textlength))
+
+if __name__ == '__main__':
+    cli()
