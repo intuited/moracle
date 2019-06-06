@@ -17,6 +17,16 @@ By default it truncates the text at a maximum of 120 characters.  This can be ch
 
 Newlines in the rules text are tranformed into tab characters.
 
+Output should be mostly self-explanatory.
+
+    NAME [COST] TYPE [P/T | L] RULES
+
+`MC` is the full casting cost
+`TYPE` consists of one or more single-letter abbreviations for Creature, Enchantment, Sorcery, Instant, Artifact, Planeswalker, or Land
+`P/T` is a creature's Power/Toughness
+`L` is a planeswalker's Loyalty
+`RULES` is the rules text
+
 Passing the `-f` command line option will cause full-form text to be output instead of single-line format.
 
     ~/src $ PYTHONPATH=~/src python3 mtgcardtext -f 'ePhaRa, GoD oF thE pOliS'

@@ -1,4 +1,14 @@
-"""Format info from the mtgjson repo for human use.
+"""Format info from the mtgjson repo for human use.  Output format:
+
+NAME [COST] TYPE [P/T | L] RULES
+
+MC is the full casting cost
+TYPE consists of one or more single-letter abbreviations for
+  Creature, Enchantment, Sorcery, Instant, Artifact,
+  Planeswalker, or Land
+P/T is a creature's Power/Toughness
+L is a planeswalker's Loyalty
+RULES is the rules text
 """
 from os import path
 
@@ -94,10 +104,11 @@ def update_db(source_path):
 
 def cli():
     from argparse import ArgumentParser, FileType
+    from argparse import RawDescriptionHelpFormatter as fmt
     from fileinput import input
     from sys import stderr
 
-    parser = ArgumentParser(description=__doc__)
+    parser = ArgumentParser(description=__doc__, formatter_class=fmt)
     parser.add_argument('-u', '--update', dest='update',
                         help="Import DB file UPDATE as .zip or .json")
     parser.add_argument('-f', '--full', action='store_const', const=format_full,
