@@ -114,6 +114,7 @@ def cli():
 
     if args.update:
         update_db(args.update)
+        print('Internal database updated from file "' + args.update + '".')
     else:
         if args.cards:
             cards = args.cards
