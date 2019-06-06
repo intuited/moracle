@@ -95,6 +95,7 @@ def update_db(source_path):
 def cli():
     from argparse import ArgumentParser, FileType
     from fileinput import input
+    from sys import stderr
 
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('-u', '--update', dest='update',
@@ -122,7 +123,10 @@ def cli():
         db = load_db()
 
         for card in cards:
-            print(args.formatter(db[card.lower()], args.textlength))
+            try:
+                print(args.formatter(db[card.lower()], args.textlength))
+            except KeyError:
+                stderr.write('Card "' + card + '" not found.\n')
 
 if __name__ == '__main__':
     cli()
