@@ -2,7 +2,7 @@
 
 NAME [COST] TYPE [P/T | L] RULES
 
-MC is the full casting cost
+COST is the full casting cost
 TYPE consists of one or more single-letter abbreviations for
   Creature, Enchantment, Sorcery, Instant, Artifact,
   Planeswalker, or Land
