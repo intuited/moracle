@@ -22,9 +22,13 @@ Output should be mostly self-explanatory.
     NAME [COST] TYPE [P/T | L] RULES
 
 `MC` is the full casting cost
+
 `TYPE` consists of one or more single-letter abbreviations for Creature, Enchantment, Sorcery, Instant, Artifact, Planeswalker, or Land
+
 `P/T` is a creature's Power/Toughness
+
 `L` is a planeswalker's Loyalty
+
 `RULES` is the rules text
 
 Passing the `-f` command line option will cause full-form text to be output instead of single-line format.
