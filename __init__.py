@@ -59,7 +59,18 @@ def format_oneline(card, text_crop=120):
     return ' '.join(components)
 
 def format_full(card, text_crop=0):
-    raise NotImplementedError("Full formatting not yet implemented.")
+    components = []
+    header = card['name']
+    if 'manaCost' in card.keys():
+        header += ': ' + card['manaCost']
+    components.append(header)
+    components.append(card['type'])
+    components.append(card['text'])
+    if 'power' in card.keys():
+        components.append(card['power'] + '/' + card['toughness'])
+    elif 'loyalty' in card.keys():
+        components.append('Loyalty: ' + card['loyalty'])
+    return '\n'.join(components) + '\n'
 
 def update_db(source_path):
     """Update the card database from a provided DB file.
