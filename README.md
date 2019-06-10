@@ -11,6 +11,8 @@ Running the utility will get less complicated when I have some time to properly 
 
 For now you'll have to run the module with `-m moracle` and add the directory where you cloned the repo to your `PYTHONPATH`.
 
+Before using it you'll have to [update the card database](#Updating-the-DB).
+
 Primary usage is to spit out one-line summaries of card text:
 
     $ PYTHONPATH=~/src python3 -m moracle Counterspell
@@ -56,11 +58,20 @@ The `-t` option does not currently work in combination with `-f`.
 
 If no card names are passed on the command line, card names will be read from standard input, one line at a time.
 
-### Initializing/Updating the DB ###
+### Updating the DB ###
 
 The card database from [mtgjson](https://mtgjson.com/#our-mission) is used.
 
-It can be initialized or updated by supplying a database file.
+It will need to be initialized before use and also updated when information from new sets is added.
+
+The easiest way to do this is by simply running
+
+    $ PYTHONPATH=~/src python3 -m moracle -u
+    Updating internal database from "https://mtgjson.com/json/AllCards.json.zip"...
+    21.1MB [00:30, 724kB/s]
+    Update successful.
+
+`moracle`'s db can also be initialized or updated by supplying a database file.
 
     ~/tmp $ curl -O 'https://mtgjson.com/json/AllCards.json.zip'
       % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
