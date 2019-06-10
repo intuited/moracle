@@ -71,7 +71,7 @@ The easiest way to do this is by simply running
     21.1MB [00:30, 724kB/s]
     Update successful.
 
-`moracle`'s db can also be initialized or updated by supplying a database file.
+`moracle`'s db can also be initialized or updated by supplying a database file, either in json format or as a zip file containing the file 'AllCards.json'.
 
     ~/tmp $ curl -O 'https://mtgjson.com/json/AllCards.json.zip'
       % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current

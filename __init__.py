@@ -18,7 +18,7 @@ DB_ZIP_CONTENT = 'AllCards.json'
 DEFAULT_UPDATE_URL = 'https://mtgjson.com/json/AllCards.json.zip'
 
 def load_db(source=DEFAULT_DB_LOCATION, progress=False):
-    """Load the db from a local file.
+    """Load the db from a URL or local file.
 
     Can load from a zip file (for updates) or unzipped .json file.
 
