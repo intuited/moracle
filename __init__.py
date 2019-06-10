@@ -146,6 +146,7 @@ def cli():
     from argparse import RawDescriptionHelpFormatter as fmt
     from fileinput import input
     from sys import stderr
+    import sys
 
     parser = ArgumentParser(description=__doc__, formatter_class=fmt)
     parser.add_argument('-u', '--update', nargs="?", dest='source',
@@ -174,7 +175,12 @@ def cli():
         else:
             cards = (line.strip() for line in input())
 
-        db = load_db()
+        try:
+            db = load_db()
+        except FileNotFoundError:
+            stderr.write('Card database not present.\n')
+            stderr.write('Run `moracle -u` to download the database.\n')
+            sys.exit(1)
 
         for card in cards:
             try:
