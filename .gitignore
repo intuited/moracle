@@ -1,4 +1,4 @@
-mtgcardtext.vimsession
+session.vim
 AllCards.json
 __pycache__
 *.pyc
