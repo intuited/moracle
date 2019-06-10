@@ -92,10 +92,10 @@ def abbrev_manacost(cost):
     from re import sub
     return sub(r'\{([0-9]+|[A-Z])\}', r'\1', cost)
 
-def format_oneline(card, text_crop=120):
+def format_oneline(card, maxwidth=0):
     """Format the card data for a 1-line presentation.
 
-    The result is cropped at a maximum of `text_crop` characters.
+    The result is cropped at a maximum of `maxwidth` characters.
     Newlines in the rules text are converted to tabs.
     """
     components = []
@@ -111,16 +111,26 @@ def format_oneline(card, text_crop=120):
 
     components.append(card['text'].replace('\n', '\t'))
 
-    return ' '.join(components)[0:text_crop]
+    return ' '.join(components)[0:maxwidth-1]
 
-def format_full(card, text_crop=0):
+def format_full(card, maxwidth=0):
+    """Format full card text.  Wrap rules at `maxwidth` characters."""
+    from textwrap import wrap
+
     components = []
     header = card['name']
     if 'manaCost' in card.keys():
         header += ': ' + card['manaCost']
     components.append(header)
     components.append(card['type'])
-    components.append(card['text'])
+
+    if maxwidth:
+        lines = card['text'].split('\n')
+        reflowed = (wrap(line, maxwidth) for line in lines)
+        components += sum(reflowed, [])
+    else:
+        components.append(card['text'])
+
     if 'power' in card.keys():
         components.append(card['power'] + '/' + card['toughness'])
     elif 'loyalty' in card.keys():
@@ -155,9 +165,10 @@ def cli():
     parser.add_argument('-f', '--full', action='store_const', const=format_full,
                         default=format_oneline, dest='formatter',
                         help="Output full card text rather than one-line info.")
-    parser.add_argument('-t', '--textlength', action='store', dest='textlength',
-                        type=int, default=120,
-                        help="Max line length of TEXTLENGTH characters. (120)")
+    parser.add_argument('-w', '--maxwidth', action='store', dest='maxwidth',
+                        type=int, default=0,
+                        help="Crop one-line and wrap full format at MAXWIDTH " +
+                             "characters.")
     parser.add_argument('cards', nargs='*', action='store',
                         help="If -u not specified and no cards given, "
                            + "cards will be read from stdin.")
@@ -184,7 +195,7 @@ def cli():
 
         for card in cards:
             try:
-                print(args.formatter(db[card.lower()], args.textlength))
+                print(args.formatter(db[card.lower()], args.maxwidth))
             except KeyError:
                 stderr.write('Card "' + card + '" not found.\n')
 

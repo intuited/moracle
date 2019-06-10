@@ -13,18 +13,17 @@ For now you'll have to run the module with `-m moracle` and add the directory wh
 
 Before using it you'll have to [update the card database](#Updating-the-DB).
 
-Primary usage is to spit out one-line summaries of card text:
+### One-line format ###
+
+`moracle`'s primary usage is to spit out one-line summaries of card text:
 
     $ PYTHONPATH=~/src python3 -m moracle Counterspell
     Counterspell: [UU] I Counter target spell.
 
-By default it truncates the text at a maximum of 120 characters.  This can be changed.
+`-w` sets a maximum total length for the one-line output.
 
-    $ PYTHONPATH=~/src python3 -m moracle -t80 'Polluted Delta'
-    Polluted Delta: L {T}, Pay 1 life, Sacrifice Polluted Delta: Search your library
-
-    $ PYTHONPATH=~/src python3 -m moracle -t400 'teferi, time raveler'
-    Teferi, Time Raveler: [1WU] P L:4 Each opponent can cast spells only any time they could cast a sorcery.	+1: Until your next turn, you may cast sorcery spells as though they had flash.	−3: Return up to one target artifact, creature, or enchantment to its owner's hand.	Draw a card.
+    $ PYTHONPATH=~/src python3 -m moracle -t80 'teferi, time raveler'
+    Teferi, Time Raveler: [1WU] P L:4 Each opponent can cast spells only any time th
 
 Newlines in the rules text are tranformed into tab characters.
 
@@ -42,6 +41,8 @@ Output should be mostly self-explanatory.
 
 `RULES` is the rules text
 
+### Full format ###
+
 Passing the `-f` command line option will cause full-form text to be output instead of single-line format.  Newlines in the rules text are retained, and the overall layout is similar to that of an actual card.
 
     $ PYTHONPATH=~/src python3 -m moracle -f 'ePhaRa, GoD oF thE pOliS'
@@ -54,7 +55,20 @@ Passing the `-f` command line option will cause full-form text to be output inst
 
 Card names must be given in full; no particular case is required.
 
-The `-t` option does not currently work in combination with `-f`.
+Passing `-w` in combination with `-f` will cause the rules text to be wrapped at that width.
+    
+    $ PYTHONPATH=~/src python3 -m moracle -w80 -f 'Teferi, Temporal Archmage'
+    Teferi, Temporal Archmage: {4}{U}{U}
+    Legendary Planeswalker — Teferi
+    +1: Look at the top two cards of your library. Put one of them into your hand
+    and the other on the bottom of your library.
+    −1: Untap up to four target permanents.
+    −10: You get an emblem with "You may activate loyalty abilities of planeswalkers
+    you control on any player's turn any time you could cast an instant."
+    Teferi, Temporal Archmage can be your commander.
+    Loyalty: 5
+
+### Card names from stdin ###
 
 If no card names are passed on the command line, card names will be read from standard input, one line at a time.
 
