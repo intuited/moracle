@@ -1,9 +1,10 @@
+import moracle
 from unittest import TestCase, main
 from os import path
 
 install_dir = path.dirname(path.abspath(__file__))
 
-class Test(TestCase):
+class TestFormat(TestCase):
     def setUp(self):
         from moracle import load_db
         self.db = load_db(install_dir + "/AllCards.json")
@@ -32,6 +33,64 @@ class Test(TestCase):
         for name in test_strings.keys():
             ##!! print(format_oneline(self.db[name]))
             self.assertEqual(test_strings[name], format_oneline(self.db[name]))
+
+class TestDBLoad(TestCase):
+    def setUp(self):
+        self.json = '[{"1": "one"}, {"2": "two"}, {"3": "three"}]'
+        self.correct_db = [{'1': "one"}, {'2': "two"}, {'3': "three"}]
+
+    def test_json_file(self):
+        from tempfile import mkstemp
+        import os
+
+        fd, filename = mkstemp()
+        try:
+            with os.fdopen(fd, mode='w') as jsonfile:
+                jsonfile.write(self.json)
+            db = moracle.load_db(filename)
+            self.assertEqual(db, self.correct_db)
+        finally:
+            os.remove(filename)
+
+    def test_zip_file(self):
+        from tempfile import mkstemp
+        from zipfile import ZipFile
+        import os
+
+        fd, filename = mkstemp(suffix='.zip')
+        try:
+            with ZipFile(filename, mode='w') as z:
+                z.writestr(moracle.DB_ZIP_CONTENT, self.json)
+            db = moracle.load_db(filename)
+            self.assertEqual(db, self.correct_db)
+        finally:
+            os.remove(filename)
+
+    def test_json_url(self):
+        import responses
+        import requests
+
+        with responses.RequestsMock() as res:
+            res.add(responses.GET, 'https://mtgjson.com/json/AllCards.json', 
+                    body=self.json, status=200, content_type="application/json")
+            db = moracle.load_db('https://mtgjson.com/json/AllCards.json')
+            self.assertEqual(db, self.correct_db)
+
+    def test_zip_url(self):
+        import responses
+        import requests
+        from io import BytesIO
+        from zipfile import ZipFile
+
+        buff = BytesIO()
+        with ZipFile(buff, 'w') as z:
+            z.writestr(moracle.DB_ZIP_CONTENT, self.json)
+
+        with responses.RequestsMock() as res:
+            res.add(responses.GET, 'https://mtgjson.com/json/AllCards.json.zip',
+                    body=buff.getbuffer(), status=200, content_type="application/zip")
+            db = moracle.load_db('https://mtgjson.com/json/AllCards.json.zip')
+            self.assertEqual(db, self.correct_db)
 
 if __name__ == '__main__':
     main()

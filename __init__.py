@@ -15,11 +15,43 @@ from os import path
 INSTALL_DIR = path.dirname(path.abspath(__file__))
 DEFAULT_DB_LOCATION = INSTALL_DIR + "/AllCards.json"
 DB_ZIP_CONTENT = 'AllCards.json'
+DEFAULT_UPDATE_URL = 'https://mtgjson.com/json/AllCards.json.zip'
 
-def load_db(db_path=DEFAULT_DB_LOCATION):
-    from json import load
-    with open(db_path) as db_file:
-        return load(db_file)
+def load_db(source=DEFAULT_DB_LOCATION):
+    """Load the db from a local file.
+
+    Can load from a zip file (for updates) or unzipped .json file.
+
+    When reading from a zip file, the db must be contained in a file
+    with name matching DB_ZIP_CONTENT.
+
+    Returns the de-JSONed data as a heirarchy of Python objects.
+    """
+    import requests
+    from zipfile import ZipFile
+    from io import BytesIO
+    import json
+
+    if source[-4:] == '.zip':
+        zipped = True
+    else:
+        zipped = False
+
+    try:
+        r = requests.get(source)
+        if zipped:
+            with ZipFile(BytesIO(r.content)) as z:
+                return json.loads(z.read(DB_ZIP_CONTENT))
+        else:
+            return json.loads(r.content)
+
+    except requests.exceptions.MissingSchema as e:
+        if zipped:
+            with ZipFile(source) as z:
+                return json.loads(z.read(DB_ZIP_CONTENT))
+        else:
+            with open(source) as f:
+                return json.load(f)
 
 def abbrev_cardtype(card_type):
     """Transform card type info from the full string to abbreviations.
@@ -82,20 +114,14 @@ def format_full(card, text_crop=0):
         components.append('Loyalty: ' + card['loyalty'])
     return '\n'.join(components) + '\n'
 
-def update_db(source_path):
-    """Update the card database from a provided DB file.
+def update_db(source):
+    """Update the card database from a URL or a local file.
 
     The provided db file can be zipped or not.
     """
-    from zipfile import ZipFile
     import json
 
-    if source_path[-4:] == '.zip':
-        with ZipFile(source_path) as z:
-            db = json.loads(z.read(DB_ZIP_CONTENT))
-    else:
-        with open(source_path) as f:
-            db = json.load(f)
+    db = load_db(source)
 
     lowerdb = dict((key.lower(), value) for key, value in db.items())
 
@@ -109,7 +135,8 @@ def cli():
     from sys import stderr
 
     parser = ArgumentParser(description=__doc__, formatter_class=fmt)
-    parser.add_argument('-u', '--update', dest='update',
+    parser.add_argument('-u', '--update', nargs="?", dest='source',
+                        const=DEFAULT_UPDATE_URL,
                         help="Import DB file UPDATE as .zip or .json")
     parser.add_argument('-f', '--full', action='store_const', const=format_full,
                         default=format_oneline, dest='formatter',
@@ -123,9 +150,11 @@ def cli():
 
     args = parser.parse_args()
 
-    if args.update:
-        update_db(args.update)
-        print('Internal database updated from file "' + args.update + '".')
+    if args.source:
+        stderr.write('Updating internal database from "' + args.source
+                     + '"...\n')
+        update_db(args.source)
+        stderr.write('Update successful.\n')
     else:
         if args.cards:
             cards = args.cards
