@@ -1,25 +1,27 @@
-## mtgcardtext ##
+## moracle ##
 
-CLI to format Magic: the Gathering card text.  Probably not something you need unless you are the sort of person who enjoys building deck lists in `vim` or another text editor.  Particularly useful for EDH decks.
+CLI to format Magic: the Gathering card text, otherwise known as Oracle data.  Probably not something you need unless you are the sort of person who enjoys building deck lists in `vim` or another text editor.  Particularly useful for EDH decks.
 
 NOTE: examples assume that you've cloned the repo into ~/src, for example with
 
     $ cd ~/src
-    $ git clone https://github.com/intuited/mtgcardtext.git
+    $ git clone https://github.com/intuited/moracle.git
 
 Running the utility will get less complicated when I have some time to properly package it and put it up on pypi.
 
+For now you'll have to run the module with `-m moracle` and add the directory where you cloned the repo to your `PYTHONPATH`.
+
 Primary usage is to spit out one-line summaries of card text:
 
-    $ PYTHONPATH=~/src python3 -m mtgcardtext Counterspell
+    $ PYTHONPATH=~/src python3 -m moracle Counterspell
     Counterspell: [UU] I Counter target spell.
 
 By default it truncates the text at a maximum of 120 characters.  This can be changed.
 
-    $ PYTHONPATH=~/src python3 -m mtgcardtext -t80 'Polluted Delta'
+    $ PYTHONPATH=~/src python3 -m moracle -t80 'Polluted Delta'
     Polluted Delta: L {T}, Pay 1 life, Sacrifice Polluted Delta: Search your library
 
-    $ PYTHONPATH=~/src python3 -m mtgcardtext -t400 'teferi, time raveler'
+    $ PYTHONPATH=~/src python3 -m moracle -t400 'teferi, time raveler'
     Teferi, Time Raveler: [1WU] P L:4 Each opponent can cast spells only any time they could cast a sorcery.	+1: Until your next turn, you may cast sorcery spells as though they had flash.	−3: Return up to one target artifact, creature, or enchantment to its owner's hand.	Draw a card.
 
 Newlines in the rules text are tranformed into tab characters.
@@ -40,7 +42,7 @@ Output should be mostly self-explanatory.
 
 Passing the `-f` command line option will cause full-form text to be output instead of single-line format.  Newlines in the rules text are retained, and the overall layout is similar to that of an actual card.
 
-    $ PYTHONPATH=~/src python3 -m mtgcardtext -f 'ePhaRa, GoD oF thE pOliS'
+    $ PYTHONPATH=~/src python3 -m moracle -f 'ePhaRa, GoD oF thE pOliS'
     Ephara, God of the Polis: {2}{W}{U}
     Legendary Enchantment Creature — God
     Indestructible
@@ -64,7 +66,7 @@ It can be initialized or updated by supplying a database file.
       % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                      Dload  Upload   Total   Spent    Left  Speed
     100 21.0M  100 21.0M    0     0  1503k      0  0:00:14  0:00:14 --:--:-- 2352k
-    ~/tmp $ PYTHONPATH=~/src python3 -m mtgcardtext -u AllCards.json.zip
+    ~/tmp $ PYTHONPATH=~/src python3 -m moracle -u AllCards.json.zip
     Internal database updated from file "AllCards.json.zip".
 
-You'll need to do this before you can use `mtgcardtext`.
+You'll need to do this before you can use `moracle`.

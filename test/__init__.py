@@ -5,7 +5,7 @@ install_dir = path.dirname(path.abspath(__file__))
 
 class Test(TestCase):
     def setUp(self):
-        from mtgcardtext import load_db
+        from moracle import load_db
         self.db = load_db(install_dir + "/AllCards.json")
 
     def test_format_oneline(self):
@@ -16,7 +16,7 @@ class Test(TestCase):
             - test incorrect string
             - test case insensitivity
         """
-        from mtgcardtext import format_oneline
+        from moracle import format_oneline
 
         test_strings = {
             'Polluted Delta'          : "Polluted Delta: L {T}, Pay 1 life, Sacrifice Polluted Delta: Search your library for an Island or Swamp card, put it ont",

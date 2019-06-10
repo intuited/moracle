@@ -1,2 +1,2 @@
-from mtgcardtext import cli
+from moracle import cli
 cli()
