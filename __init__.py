@@ -179,7 +179,8 @@ def lookup_full(db, string):
         return None
 
 def lookup_start(db, string):
-    raise NotImplementedError()
+    return dict((key, value) for key, value in db.items()
+                if key.startswith(string.lower()))
 
 def lookup_in(db, string):
     raise NotImplementedError()
@@ -194,7 +195,7 @@ def lookup(db, string, method='full'):
 
     For the 'full' method, return value is the db Dictionary for that card,
     or None if the lookup failed.
-    Otherwise, return value is a List containing the matched db dicts.
+    Otherwise, return value is a Dictionary containing the matched db dicts.
     """
     return { 'full':  lookup_full,
              'start': lookup_start,

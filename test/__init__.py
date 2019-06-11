@@ -168,16 +168,16 @@ class TestLookup(TestCase):
 
     def test_lookup_full_nocaps(self):
         """Test lookup of full card name in the database."""
-        self.assertEqual(moracle.lookup(self.db, 'swamp'), [self.db['swamp']])
+        self.assertIs(moracle.lookup(self.db, 'swamp'), self.db['swamp'])
 
     def test_lookup_full_normalcaps(self):
         """Test lookup of full card name in the database."""
-        self.assertEqual(moracle.lookup(self.db, 'Teferi, Temporal Archmage'),
-                         [self.db['teferi, temporal archmage']])
+        self.assertIs(moracle.lookup(self.db, 'Teferi, Temporal Archmage'),
+                         self.db['teferi, temporal archmage'])
     def test_lookup_full_randomcaps(self):
         """Test lookup of full card name in the database."""
-        self.assertEqual(moracle.lookup(self.db, 'aToGaTOG'),
-                         [self.db['atogatog']],
+        self.assertIs(moracle.lookup(self.db, 'aToGaTOG'),
+                         self.db['atogatog'],
                          'full')
 
     def test_lookup_start(self):
@@ -200,8 +200,8 @@ class TestLookup(TestCase):
                    "teferi, temporal archmage",
                    "teferi, timebender",
                    "teferi, time raveler"]
-        self.assertEqual(moracle.lookup(self.db, 'Teferi', 'start'),
-                         [self.db[name] for name in teferis])
+        self.assertEqual(set(moracle.lookup(self.db, 'Teferi', 'start').keys()),
+                         set(teferis))
 
     def test_lookup_in(self):
         intos = ["cast into darkness",
@@ -228,8 +228,8 @@ class TestLookup(TestCase):
                  "vanish into memory",
                  "write into being"]
 
-        self.assertEqual(moracle.lookup(self.db, 'INTO', 'in'),
-                         [self.db[name] for name in intos])
+        self.assertEqual(set(moracle.lookup(self.db, 'INTO', 'in').keys()),
+                         set(intos))
 
 if __name__ == '__main__':
     main()
