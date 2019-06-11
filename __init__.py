@@ -111,18 +111,33 @@ def format_oneline(card, maxwidth=0):
 
     components.append(card['text'].replace('\n', '\t'))
 
-    return ' '.join(components)[0:maxwidth-1]
+    result = ' '.join(components)
+
+    if maxwidth:
+        return result[0:maxwidth]
+    else:
+        return result
 
 def format_full(card, maxwidth=0):
-    """Format full card text.  Wrap rules at `maxwidth` characters."""
+    """Format full card text.
+
+    If `maxwidth` is non-zero, wrap rules at `maxwidth` characters
+    and align other components as they are on cards.
+
+    With zero `maxwidth`, left-justify everything and don't wrap.
+    """
     from textwrap import wrap
 
     components = []
+
     header = card['name']
     if 'manaCost' in card.keys():
-        header += ': ' + card['manaCost']
+        if not maxwidth:
+            header += ': '
+        header += card['manaCost'].rjust(maxwidth - len(header))
     components.append(header)
-    components.append(card['type'])
+
+    components.append(card['type'].center(maxwidth).rstrip())
 
     if maxwidth:
         lines = card['text'].split('\n')
@@ -132,9 +147,15 @@ def format_full(card, maxwidth=0):
         components.append(card['text'])
 
     if 'power' in card.keys():
-        components.append(card['power'] + '/' + card['toughness'])
+        footer = card['power'] + '/' + card['toughness']
+        components.append(footer.rjust(maxwidth))
     elif 'loyalty' in card.keys():
-        components.append('Loyalty: ' + card['loyalty'])
+        if not maxwidth:
+            footer = 'Loyalty: ' + card['loyalty']
+        else:
+            footer = card['loyalty']
+        components.append(footer.rjust(maxwidth))
+
     return '\n'.join(components) + '\n'
 
 def update_db(source):
