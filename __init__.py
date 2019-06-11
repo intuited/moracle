@@ -172,6 +172,34 @@ def update_db(source):
     with open(DEFAULT_DB_LOCATION, 'w') as out:
         json.dump(lowerdb, out)
 
+def lookup_full(db, string):
+    try:
+        return db[string.lower()]
+    except KeyError:
+        return None
+
+def lookup_start(db, string):
+    raise NotImplementedError()
+
+def lookup_in(db, string):
+    raise NotImplementedError()
+
+def lookup(db, string, method='full'):
+    """Return all cards matching `string` in `db`.
+
+    The `method` determines how the search is performed.
+    - 'full': Searches for a card with that exact name.  Case ignored.
+    - 'start': Searches for names starting with the string.  Case ignored.
+    - 'in': Searches for names with the string in it.  Case ignored.
+
+    For the 'full' method, return value is the db Dictionary for that card,
+    or None if the lookup failed.
+    Otherwise, return value is a List containing the matched db dicts.
+    """
+    return { 'full':  lookup_full,
+             'start': lookup_start,
+             'in':    lookup_in     }[method](db, string)
+
 def cli():
     from argparse import ArgumentParser, FileType
     from argparse import RawDescriptionHelpFormatter as fmt
@@ -216,7 +244,7 @@ def cli():
 
         for card in cards:
             try:
-                print(args.formatter(db[card.lower()], args.maxwidth))
+                print(args.formatter(lookup(db, card), args.maxwidth))
             except KeyError:
                 stderr.write('Card "' + card + '" not found.\n')
 

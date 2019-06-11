@@ -161,5 +161,75 @@ class TestDBLoad(TestCase):
             db = moracle.load_db('https://mtgjson.com/json/AllCards.json.zip')
             self.assertEqual(db, self.correct_db)
 
+class TestLookup(TestCase):
+    def setUp(self):
+        from moracle import load_db
+        self.db = load_db(install_dir + "/AllCards.json")
+
+    def test_lookup_full_nocaps(self):
+        """Test lookup of full card name in the database."""
+        self.assertEqual(moracle.lookup(self.db, 'swamp'), [self.db['swamp']])
+
+    def test_lookup_full_normalcaps(self):
+        """Test lookup of full card name in the database."""
+        self.assertEqual(moracle.lookup(self.db, 'Teferi, Temporal Archmage'),
+                         [self.db['teferi, temporal archmage']])
+    def test_lookup_full_randomcaps(self):
+        """Test lookup of full card name in the database."""
+        self.assertEqual(moracle.lookup(self.db, 'aToGaTOG'),
+                         [self.db['atogatog']],
+                         'full')
+
+    def test_lookup_start(self):
+        teferis = ["teferi, hero of dominaria",
+                   "teferi, mage of zhalfir",
+                   "teferi's care",
+                   "teferi's curse",
+                   "teferi's drake",
+                   "teferi's honor guard",
+                   "teferi's imp",
+                   "teferi's isle",
+                   "teferi's moat",
+                   "teferi's protection",
+                   "teferi's puzzle box",
+                   "teferi's realm",
+                   "teferi's response",
+                   "teferi's sentinel",
+                   "teferi's time twist",
+                   "teferi's veil",
+                   "teferi, temporal archmage",
+                   "teferi, timebender",
+                   "teferi, time raveler"]
+        self.assertEqual(moracle.lookup(self.db, 'Teferi', 'start'),
+                         [self.db[name] for name in teferis])
+
+    def test_lookup_in(self):
+        intos = ["cast into darkness",
+                 "descent into madness",
+                 "dismiss into dream",
+                 "exile into darkness",
+                 "fade into antiquity",
+                 "fold into aether",
+                 "into the core",
+                 "into the fray",
+                 "into the maw of hell",
+                 "into the north",
+                 "into the roil",
+                 "into the void",
+                 "into the wilds",
+                 "into thin air",
+                 "mask of intolerance",
+                 "open into wonder",
+                 "plunge into darkness",
+                 "press into service",
+                 "sink into takenuma",
+                 "spin into myth",
+                 "take into custody",
+                 "vanish into memory",
+                 "write into being"]
+
+        self.assertEqual(moracle.lookup(self.db, 'INTO', 'in'),
+                         [self.db[name] for name in intos])
+
 if __name__ == '__main__':
     main()
