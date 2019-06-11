@@ -55,18 +55,34 @@ Passing the `-f` command line option will cause full-form text to be output inst
 
 Card names must be given in full; no particular case is required.
 
-Passing `-w` in combination with `-f` will cause the rules text to be wrapped at that width.
+Passing `-w` in combination with `-f` will cause the rules text to be wrapped at that width.  Other card elements will be aligned as they are on an actual card.
     
-    $ PYTHONPATH=~/src python3 -m moracle -w80 -f 'Teferi, Temporal Archmage'
-    Teferi, Temporal Archmage: {4}{U}{U}
-    Legendary Planeswalker — Teferi
-    +1: Look at the top two cards of your library. Put one of them into your hand
-    and the other on the bottom of your library.
-    −1: Untap up to four target permanents.
-    −10: You get an emblem with "You may activate loyalty abilities of planeswalkers
-    you control on any player's turn any time you could cast an instant."
-    Teferi, Temporal Archmage can be your commander.
-    Loyalty: 5
+    $ PYTHONPATH=~/src python3 -m moracle -w40 -f 'Teferi, Time Raveler'
+    Teferi, Time Raveler           {1}{W}{U}
+        Legendary Planeswalker — Teferi
+    Each opponent can cast spells only any
+    time they could cast a sorcery.
+    +1: Until your next turn, you may cast
+    sorcery spells as though they had flash.
+    −3: Return up to one target artifact,
+    creature, or enchantment to its owner's
+    hand. Draw a card.
+                                           4
+If the other elements are longer than the max width, they will extend beyond it.
+
+    $ PYTHONPATH=~/src python3 . -f -w15 atogatog
+    Atogatog{W}{U}{B}{R}{G}
+    Legendary Creature — Atog
+    Sacrifice an
+    Atog creature:
+    Atogatog gets
+    +X/+X until end
+    of turn, where
+    X is the
+    sacrificed
+    creature's
+    power.
+                5/5
 
 ### Card names from stdin ###
 
