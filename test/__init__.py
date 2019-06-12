@@ -352,6 +352,18 @@ class TestIdentifyCardName(TestCase):
     def test_card_name_amongst_other_ones(self):
         self.assertEqual(moracle.identify_card_name(self.db, 'island, swamp, plains', 10),
                          (8, 12, 'Swamp'))
+    def test_lots_of_parentheses_and_shit(self):
+        self.assertEqual(moracle.identify_card_name(self.db, "most expensive card: (volcanic island)", 30),
+                         (22, 36, 'Volcanic Island'))
+    def test_incomplete_card_name(self):
+        self.assertEqual(moracle.identify_card_name(self.db, "I am typing the card 'Volcanic Isla", 24),
+                         (22, 34, 'Volcanic Island'))
+    def test_incomplete_ambiguous_card_name(self):
+        self.assertEqual(set(moracle.identify_card_name(self.db, "I am typing the card 'Volcanic R", 24).keys()),
+                         {'volcanic rambler', 'volcanic rush'})
+    def test_incomplete_ambiguous_card_name_cursor_at_end(self):
+        self.assertEqual(set(moracle.identify_card_name(self.db, "I am typing the card 'Volcanic R", 32).keys()),
+                         {'volcanic rambler', 'volcanic rush'})
 
 if __name__ == '__main__':
     main()

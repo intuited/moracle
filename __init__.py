@@ -204,9 +204,10 @@ def lookup(db, string, method='full'):
 
 from collections import namedtuple
 Word = namedtuple('Word', ['word', 'start', 'end'])
+word_characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
-def split_string(string, ifs=' '):
-    """Splits `string` along characters in `ifs`.
+def split_string(string, chars=word_characters):
+    """Splits `string` along characters not in `chars`.
 
     Returns a list of (word, start, end) Word tuples.
     - `word`: the word as a str
@@ -217,7 +218,7 @@ def split_string(string, ifs=' '):
     current_word = None
 
     for pos in range(len(string)):
-        if string[pos] not in ifs:
+        if string[pos] in chars:
             if not current_word:
                 # we found a new word!
                 current_word = [None, None, None]
@@ -255,7 +256,7 @@ def cursor_word(words, cursor_pos):
 
     return len(words) - 1
 
-def identify_card_name(db, line, cursor_pos, ifs=' ,'):
+def identify_card_name(db, line, cursor_pos, chars=word_characters):
     """Complete the card name that the cursor is located within.
 
     Splits `line` into words,
@@ -274,7 +275,7 @@ def identify_card_name(db, line, cursor_pos, ifs=' ,'):
     MatchedCard = namedtuple('MatchedCard', ['start_pos', 'end_pos', 'name'])
     MultipleMatches = namedtuple('MultipleMatches', ['start_word', 'end_word', 'matches'])
 
-    words = split_string(line, ifs)
+    words = split_string(line)
     word_index = cursor_word(words, cursor_pos)
 
     def search_words(db, start_word, end_word, search_left=True, search_right=True):
@@ -292,10 +293,6 @@ def identify_card_name(db, line, cursor_pos, ifs=' ,'):
 
         if not matches:
             return None
-        ##~~  if len(matches) == 1:
-        ##~~      return MatchedCard(words[start_word].start,
-        ##~~                         words[end_word].end,
-        ##~~                         list(matches.values())[0]['name'])
 
         if search_left:
             result = search_words(matches, start_word - 1, end_word, search_right=False)
@@ -318,9 +315,17 @@ def identify_card_name(db, line, cursor_pos, ifs=' ,'):
                                words[end_word].end,
                                full_match['name'])
 
+        if len(matches) == 1:
+            return MatchedCard(words[start_word].start,
+                               words[end_word].end,
+                               list(matches.values())[0]['name'])
+
         return MultipleMatches(start_word, end_word, matches)
 
-    return search_words(db, word_index, word_index)
+    result = search_words(db, word_index, word_index)
+    if type(result) == MultipleMatches:
+        return result.matches
+    return result
 
 ##~~  def identify_card_candidates(db, line, cursor_pos, ifs=' '):
 ##~~      """Provide a list of card names which match an incomplete card fragment.
