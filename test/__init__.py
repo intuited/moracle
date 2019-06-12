@@ -4,10 +4,11 @@ from os import path
 
 install_dir = path.dirname(path.abspath(__file__))
 
+test_db = moracle.load_db(install_dir + "/AllCards.json")
+
 class TestFormat(TestCase):
     def setUp(self):
-        from moracle import load_db
-        self.db = load_db(install_dir + "/AllCards.json")
+        self.db = test_db
 
     def test_format_oneline(self):
         """Test formatting for one-line output.
@@ -163,8 +164,7 @@ class TestDBLoad(TestCase):
 
 class TestLookup(TestCase):
     def setUp(self):
-        from moracle import load_db
-        self.db = load_db(install_dir + "/AllCards.json")
+        self.db = test_db
 
     def test_lookup_full_nocaps(self):
         """Test lookup of full card name in the database."""
@@ -231,6 +231,127 @@ class TestLookup(TestCase):
 
         self.assertEqual(set(moracle.lookup(self.db, 'INTO', 'in').keys()),
                          set(intos))
+
+class TestSplitString(TestCase):
+    def test_empty_string(self):
+        self.assertEqual(moracle.split_string(''), [])
+
+    def test_whitespace(self):
+        self.assertEqual(moracle.split_string(' '), [])
+
+    def test_one_word(self):
+        self.assertEqual(moracle.split_string('word'), [('word', 0, 3)])
+
+    def test_word_with_leading_whitespace(self):
+        self.assertEqual(moracle.split_string(' word'), [('word', 1, 4)])
+
+    def test_word_with_trailing_whitespace(self):
+        self.assertEqual(moracle.split_string('word '), [('word', 0, 3)])
+
+    def test_word_within_whitespace(self):
+        self.assertEqual(moracle.split_string(' word '), [('word', 1, 4)])
+
+    def test_word_within_long_whitespace(self):
+        self.assertEqual(moracle.split_string('  word   '), [('word', 2, 5)])
+
+    def test_two_words(self):
+        self.assertEqual(moracle.split_string('word1 word2'),
+                         [('word1', 0, 4), ('word2', 6, 10)])
+
+    def test_two_words_within_long_whitespace(self):
+        self.assertEqual(moracle.split_string('   word1  word2  '),
+                         [('word1', 3, 7), ('word2', 10, 14)])
+
+    def test_three_words(self):
+        self.assertEqual(moracle.split_string('word1 word2 word3'),
+                         [('word1', 0, 4), ('word2', 6, 10), ('word3', 12, 16)])
+
+class TestCursorWord(TestCase):
+    def setUp(self):
+        self.two_words = [('word1', 1, 6), ('word2', 9, 14)]
+
+    def test_no_words(self):
+        self.assertEqual(moracle.cursor_word([], 0), -1)
+
+    def test_no_words_nonzero_pos(self):
+        self.assertEqual(moracle.cursor_word([], 3), -1)
+
+    def test_one_word_at_zero_with_zero_pos(self):
+        self.assertEqual(moracle.cursor_word([('word', 0, 4)], 0), 0)
+
+    def test_one_word_at_zero_with_nonzero_pos(self):
+        self.assertEqual(moracle.cursor_word([('word', 0, 4)], 2), 0)
+
+    def test_one_word_at_nonzero_with_zero_pos(self):
+        self.assertEqual(moracle.cursor_word([('word', 3, 7)], 0), -1)
+
+    def test_one_word_at_nonzero_with_nonzero_miss_pos(self):
+        self.assertEqual(moracle.cursor_word([('word', 3, 7)], 2), -1)
+
+    def test_one_word_at_nonzero_with_nonzero_hit_pos(self):
+        self.assertEqual(moracle.cursor_word([('word', 3, 7)], 3), 0)
+
+    def test_one_word_at_zero_with_pos_at_end_of_word(self):
+        self.assertEqual(moracle.cursor_word([('word', 0, 4)], 4), 0)
+
+    def test_one_word_at_zero_with_pos_after_word(self):
+        self.assertEqual(moracle.cursor_word([('word', 0, 4)], 5), 0)
+
+    def test_two_words_with_pos_before_first_word(self):
+        self.assertEqual(moracle.cursor_word(self.two_words, 0), -1)
+
+    def test_two_words_with_pos_in_first_word(self):
+        self.assertEqual(moracle.cursor_word(self.two_words, 2), 0)
+
+    def test_two_words_with_pos_after_first_word(self):
+        self.assertEqual(moracle.cursor_word(self.two_words, 7), 0)
+
+    def test_two_words_with_pos_before_second_word(self):
+        self.assertEqual(moracle.cursor_word(self.two_words, 8), 0)
+
+    def test_two_words_with_pos_in_second_word(self):
+        self.assertEqual(moracle.cursor_word(self.two_words, 9), 1)
+
+    def test_two_words_with_pos_after_second_word(self):
+        self.assertEqual(moracle.cursor_word(self.two_words, 15), 1)
+
+class TestIdentifyCardName(TestCase):
+    def setUp(self):
+        self.db = test_db
+
+    def test_oneword(self):
+        self.assertEqual(moracle.identify_card_name(self.db, 'swamp', 0),
+                         (0, 4, 'Swamp'))
+    def test_left_of_oneword(self):
+        self.assertEqual(moracle.identify_card_name(self.db, ' swamp', 0),
+                         None)
+    def test_right_of_oneword(self):
+        self.assertEqual(moracle.identify_card_name(self.db, 'swamp ', 5),
+                         (0, 4, 'Swamp'))
+    def test_middle_of_twoword(self):
+        self.assertEqual(moracle.identify_card_name(self.db, 'island sanctuary', 6),
+                         (0, 15, 'Island Sanctuary'))
+    def test_beginning_of_twoword(self):
+        self.assertEqual(moracle.identify_card_name(self.db, 'island sanctuary', 0),
+                         (0, 15, 'Island Sanctuary'))
+    def test_end_of_twoword(self):
+        self.assertEqual(moracle.identify_card_name(self.db, 'island sanctuary', 15),
+                         (0, 15, 'Island Sanctuary'))
+    def test_twoword_gibberish(self):
+        self.assertEqual(moracle.identify_card_name(self.db, 'island septictank', 0),
+                         (0, 5, 'Island'))
+    def test_second_word_of_two_word_card_where_second_word_is_also_card(self):
+        self.assertEqual(moracle.identify_card_name(self.db, 'volcanic island', 11),
+                         (0, 14, 'Volcanic Island'))
+    def test_first_word_gibberish_second_word_card(self):
+        self.assertEqual(moracle.identify_card_name(self.db, 'voltronic island', 1),
+                         None)
+    def test_on_second_of_four_words(self):
+        self.assertEqual(moracle.identify_card_name(self.db, 'jace, the mind sculptor', 8),
+                         (0, 22, 'Jace, the Mind Sculptor'))
+    def test_card_name_amongst_other_ones(self):
+        self.assertEqual(moracle.identify_card_name(self.db, 'island, swamp, plains', 10),
+                         (8, 12, 'Swamp'))
 
 if __name__ == '__main__':
     main()

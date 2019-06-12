@@ -202,6 +202,140 @@ def lookup(db, string, method='full'):
              'start': lookup_start,
              'in':    lookup_in     }[method](db, string)
 
+from collections import namedtuple
+Word = namedtuple('Word', ['word', 'start', 'end'])
+
+def split_string(string, ifs=' '):
+    """Splits `string` along characters in `ifs`.
+
+    Returns a list of (word, start, end) Word tuples.
+    - `word`: the word as a str
+    - `start`: position in `string` of the first character of `word`
+    - `end`: position in `string` of the last character of `word`
+    """
+    words = []
+    current_word = None
+
+    for pos in range(len(string)):
+        if string[pos] not in ifs:
+            if not current_word:
+                # we found a new word!
+                current_word = [None, None, None]
+                current_word[0] = string[pos]
+                current_word[1] = pos
+                current_word[2] = pos
+                words.append(current_word)
+            else:
+                # we're continuing to explore this word
+                current_word[0] += string[pos]
+                current_word[2] = pos
+        else:
+            current_word = None
+
+    return [Word(*word) for word in words]
+
+def cursor_word(words, cursor_pos):
+    """
+    Given a list of words from `split_string`, returns the index of the tuple
+    within that list at which the cursor is located.
+
+    If the cursor is located in whitespace or after the last word,
+    returns the index of the last word before the cursor position.
+
+    If the cursor is located in leading whitespace, or there are no words,
+    returns -1.
+    """
+    words = [Word(*word) for word in words]
+
+    for i, word in enumerate(words):
+        if cursor_pos < word.start:
+            return i - 1
+        elif cursor_pos <= word.end:
+            return i
+
+    return len(words) - 1
+
+def identify_card_name(db, line, cursor_pos, ifs=' ,'):
+    """Complete the card name that the cursor is located within.
+
+    Splits `line` into words,
+    and successively narrows down the search using adjacent words.
+
+    If the cursor is located on whitespace,
+    starts with the word to the left of that whitespace.
+    This is for cases where the cursor is on whitespace within a card name.
+
+    Returns the start and end positions for the section to be replaced
+    as well as the card name (replacement text) as a string.
+
+    If there is no valid replacement, returns None.
+    """
+    from collections import namedtuple
+    MatchedCard = namedtuple('MatchedCard', ['start_pos', 'end_pos', 'name'])
+    MultipleMatches = namedtuple('MultipleMatches', ['start_word', 'end_word', 'matches'])
+
+    words = split_string(line, ifs)
+    word_index = cursor_word(words, cursor_pos)
+
+    def search_words(db, start_word, end_word, search_left=True, search_right=True):
+        if start_word < 0:
+            return None
+        if end_word >= len(words):
+            return None
+
+        def current_replacement():
+            start_pos = words[start_word].start
+            end_pos = words[end_word].end
+            return line[start_pos:end_pos+1]
+
+        matches = lookup_in(db, current_replacement())
+
+        if not matches:
+            return None
+        ##~~  if len(matches) == 1:
+        ##~~      return MatchedCard(words[start_word].start,
+        ##~~                         words[end_word].end,
+        ##~~                         list(matches.values())[0]['name'])
+
+        if search_left:
+            result = search_words(matches, start_word - 1, end_word, search_right=False)
+            if type(result) == MatchedCard:
+                return result
+            if type(result) == MultipleMatches:
+                start_word, end_word, matches = result
+
+        if search_right:
+            result = search_words(matches, start_word, end_word + 1, search_left=False)
+            if type(result) == MatchedCard:
+                return result
+            if type(result) == MultipleMatches:
+                start_word, end_word, matches = result
+
+        # check if the replacement zone fully matches a card name
+        full_match = lookup_full(db, current_replacement())
+        if full_match:
+            return MatchedCard(words[start_word].start,
+                               words[end_word].end,
+                               full_match['name'])
+
+        return MultipleMatches(start_word, end_word, matches)
+
+    return search_words(db, word_index, word_index)
+
+##~~  def identify_card_candidates(db, line, cursor_pos, ifs=' '):
+##~~      """Provide a list of card names which match an incomplete card fragment.
+##~~  
+##~~      The cursor can be anywhere within the card fragment in the given line.
+##~~  
+##~~      Uses the same search procedure as `identify_card_name`.
+##~~  
+##~~      If addition of further words to the card name fragment
+##~~      yields no results, searching terminates in that direction.
+##~~  
+##~~      Returns the start and end positions for the section to be replaced
+##~~      as well as a list of possible card names to replace that section.
+##~~      """
+
 def cli():
     from argparse import ArgumentParser, FileType
     from argparse import RawDescriptionHelpFormatter as fmt
