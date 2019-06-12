@@ -183,7 +183,8 @@ def lookup_start(db, string):
                 if key.startswith(string.lower()))
 
 def lookup_in(db, string):
-    raise NotImplementedError()
+    return dict((key, value) for key, value in db.items()
+                if string.lower() in key)
 
 def lookup(db, string, method='full'):
     """Return all cards matching `string` in `db`.

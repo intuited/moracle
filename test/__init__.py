@@ -211,6 +211,7 @@ class TestLookup(TestCase):
                  "fade into antiquity",
                  "fold into aether",
                  "into the core",
+                 "into the earthen maw",
                  "into the fray",
                  "into the maw of hell",
                  "into the north",
