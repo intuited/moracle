@@ -81,9 +81,10 @@ class Result(dict):
      'fork': {'name': 'Fork', 'type': 'Instant', 'manaCost': '{R}{R}', ...},
      ...}
 
-    Will provide functionality additional to that of `dict`:
+    Provides some convenient functionality additional to that of `dict`:
     - Represents self as a set containing the card names
     - oneline() method returns formatted representations of cards
+    - add() updates a copy of self and returns it
     """
     def copy(self):
         """Shallow copy as per dict.copy()"""
@@ -99,6 +100,9 @@ class Result(dict):
         """Return a list of oneline format of cards in the result."""
         import moracle
         return [moracle.format_oneline(v, width) for v in self.values()]
+
+    def __repr__(self):
+        return 'Result(' + str(set(self.keys())) + ')'
 
 """Comparison methods.
 
