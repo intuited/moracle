@@ -85,9 +85,13 @@ class Result(dict):
     - Represents self as a set containing the card names
     - oneline() method returns formatted representations of cards
     """
+    def copy(self):
+        """Shallow copy as per dict.copy()"""
+        return Result(super().copy())
+
     def add(self, d):
         """Copies itself, updates the copy with `d`, and returns the copy."""
-        new = Result(self.copy())
+        new = self.copy()
         new.update(d)
         return new
 
