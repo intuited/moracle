@@ -240,3 +240,28 @@ def HasType(t):
     return Or(search(field='types', method=IN, value=t),
               search(field='subtypes', method=IN, value=t),
               search(field='supertypes', method=IN, value=t))
+
+"""Method-based access to predicates for chaining
+
+These methods of the Result class are invoked chain-style, e.g.
+>>> NameContains("thopter")(db).Not(ColorIdentityHas("U"))
+
+They serve to further refine the result set and cannot be used to broaden it.
+"""
+refiners = {'Not': Not,
+            'NameContains': NameContains,
+            'NameMatches': NameMatches,
+            'NameIs': NameIs,
+            'TextContains': TextContains,
+            'TextMatches': TextMatches,
+            'CMC': CMC,
+            'ColorIdentityHas': ColorIdentityHas,
+            'ColorIdentityOnly': ColorIdentityOnly,
+            'ColorIdentityIs': ColorIdentityIs,
+            'HasType': HasType}
+def make_pred(name, fn):
+    setattr(Result, name, lambda self, *args, **kwargs:
+                                 fn(*args, **kwargs)(self))
+for name, fn in refiners.items():
+    make_pred(name, fn)
+del make_pred, refiners, name, fn
