@@ -37,12 +37,14 @@ Cards with five-colour colour identity:
 ...                 {'value': '{B}', 'method': IN, 'field': 'text'} ) )(db)
 
 Valid values for 'method':
-    - is: case-insensitive exact match of full string
-    - in: case-insensitive text search, except for land
+    - IS: case-insensitive exact match of full string
+    - IN: case-insensitive text search, except for land
           where it looks for an exact (case-ignored) match with a word.
-    - matches: regex match
-    - gt, ge, eq, le, lt: only work for numeric fields,
+    - MATCHES: regex match
+    - GT, GE, EQ, LE, LT: only work for numeric fields,
                           i.e. 'convertedManaCost'
+    - HASKEY: True if value has key equal to `desired`.  Useful for searches
+              on, e.g., 'legalities' field
 
 There are also a number of predicates that can be used for convenience.
 These simply work by generating dictionaries similar to those seen above.
@@ -102,7 +104,10 @@ class Result(dict):
         return [moracle.format_oneline(v, width) for v in self.values()]
 
     def __repr__(self):
-        return 'Result(' + str(set(self.keys())) + ')'
+        if len(self):
+            return 'Result(' + str(set(self.keys())) + ')'
+        else:
+            return 'Result({})'
 
 """Comparison methods.
 
@@ -124,11 +129,13 @@ LE = operator.le
 EQ = operator.eq
 GE = operator.ge
 GT = operator.gt
+# Dictionary comparison methods
+HASKEY = lambda value, desired: desired in value.keys()
 
 # Main search function
 def search(field='name', method=IS, value=None):
     """Searches for cards which match the given condition.
-    
+
     Returns a function which takes a database dict or Result and returns a Result.
 
     The Result object is dict-like.
@@ -143,7 +150,7 @@ def search(field='name', method=IS, value=None):
 # Set manipulation
 def And(*conditions):
     """The intersection of the results of searches satisfying `conditions`.
-    
+
     Returns a function which takes a database dict or Result and returns a Result.
     """
     def andPred(db):
@@ -221,7 +228,7 @@ def ColorIdentityOnly(colours):
 
 def ColorIdentityIs(colours):
     """Matches cards that have exactly the given colour identity.
-    
+
     `colours` is a string containing any or all of the letters 'BGRUW'.
     """
     return And(ColorIdentityHas(colours), ColorIdentityOnly(colours))
@@ -232,7 +239,7 @@ def ColorIdentityIs(colours):
 
 def HasType(t):
     """Matches cards that has type `t`.
-    
+
     Checks 'types', 'subtypes' or 'supertypes' lists for all cards.
 
     Case-sensitive (for now).
@@ -241,6 +248,14 @@ def HasType(t):
               search(field='subtypes', method=IN, value=t),
               search(field='supertypes', method=IN, value=t))
 
+def LegalIn(f):
+    """Matches cards legal in format `f`.
+
+    Legal formats: commander, duel, legacy, penny, vintage, frontier,
+                   modern, pauper, future, standard, oldschool
+    """
+    return search(field='legalities', method=HASKEY, value=f.lower())
+
 """Method-based access to predicates for chaining
 
 These methods of the Result class are invoked chain-style, e.g.
@@ -248,7 +263,8 @@ These methods of the Result class are invoked chain-style, e.g.
 
 They serve to further refine the result set and cannot be used to broaden it.
 """
-refiners = {'Not': Not,
+refiners = {'refine': search,
+            'Not': Not,
             'NameContains': NameContains,
             'NameMatches': NameMatches,
             'NameIs': NameIs,
@@ -258,7 +274,8 @@ refiners = {'Not': Not,
             'ColorIdentityHas': ColorIdentityHas,
             'ColorIdentityOnly': ColorIdentityOnly,
             'ColorIdentityIs': ColorIdentityIs,
-            'HasType': HasType}
+            'HasType': HasType,
+            'LegalIn': LegalIn}
 def make_pred(name, fn):
     setattr(Result, name, lambda self, *args, **kwargs:
                                  fn(*args, **kwargs)(self))

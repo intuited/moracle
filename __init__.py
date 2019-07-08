@@ -109,7 +109,8 @@ def format_oneline(card, maxwidth=0):
     if 'loyalty' in card.keys():
         components.append('L:' + card['loyalty'])
 
-    components.append(card['text'].replace('\n', '\t'))
+    if 'text' in card.keys():
+        components.append(card['text'].replace('\n', '\t'))
 
     result = ' '.join(components)
 
