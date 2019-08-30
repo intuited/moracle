@@ -35,6 +35,7 @@ def load_db(source=DEFAULT_DB_LOCATION, progress=False):
     from io import BytesIO
     import json
     from tqdm import tqdm
+    from moracle.search import Result
 
     if source[-4:] == '.zip':
         zipped = True
@@ -54,17 +55,17 @@ def load_db(source=DEFAULT_DB_LOCATION, progress=False):
 
         if zipped:
             with ZipFile(buf) as z:
-                return json.loads(z.read(DB_ZIP_CONTENT))
+                return Result(json.loads(z.read(DB_ZIP_CONTENT)))
         else:
-            return json.loads(r.content)
+            return Result(json.loads(r.content))
 
     except requests.exceptions.MissingSchema as e:
         if zipped:
             with ZipFile(source) as z:
-                return json.loads(z.read(DB_ZIP_CONTENT))
+                return Result(json.loads(z.read(DB_ZIP_CONTENT)))
         else:
             with open(source) as f:
-                return json.load(f)
+                return Result(json.load(f))
 
 def abbrev_cardtype(card_type):
     """Transform card type info from the full string to abbreviations.
