@@ -14,16 +14,15 @@ from os import path
 
 INSTALL_DIR = path.dirname(path.abspath(__file__))
 DEFAULT_DB_LOCATION = INSTALL_DIR + "/AllCards.json"
-DB_ZIP_CONTENT = 'AllCards.json'
-DEFAULT_UPDATE_URL = 'https://mtgjson.com/json/AllCards.json.zip'
+DEFAULT_UPDATE_URL = 'https://mtgjson.com/api/v5/AtomicCards.json.zip'
 
 def load_db(source=DEFAULT_DB_LOCATION, progress=False):
     """Load the db from a URL or local file.
 
     Can load from a zip file (for updates) or unzipped .json file.
 
-    When reading from a zip file, the db must be contained in a file
-    with name matching DB_ZIP_CONTENT.
+    If a zip file is used, the first file in the archive
+    is presumed to be the database json file.
 
     If `progress` is True and `source` is a URL,
     download progress will be displayed while loading the db.
@@ -55,14 +54,14 @@ def load_db(source=DEFAULT_DB_LOCATION, progress=False):
 
         if zipped:
             with ZipFile(buf) as z:
-                return Result(json.loads(z.read(DB_ZIP_CONTENT)))
+                return Result(json.loads(z.read(z.namelist()[0])))
         else:
             return Result(json.loads(r.content))
 
     except requests.exceptions.MissingSchema as e:
         if zipped:
             with ZipFile(source) as z:
-                return Result(json.loads(z.read(DB_ZIP_CONTENT)))
+                return Result(json.loads(z.read(z.namelist()[0])))
         else:
             with open(source) as f:
                 return Result(json.load(f))
@@ -169,7 +168,10 @@ def update_db(source):
 
     db = load_db(source, progress=True)
 
-    lowerdb = dict((key.lower(), value) for key, value in db.items())
+    # Card data is keyed to 'data'
+    # Each card entry is a list; we just keep the first dict in the list
+    # We convert card name keys to lower case for quicker lookups
+    lowerdb = dict((key.lower(), value[0]) for key, value in db['data'].items())
 
     with open(DEFAULT_DB_LOCATION, 'w') as out:
         json.dump(lowerdb, out)

@@ -103,11 +103,11 @@ The easiest way to do this is by simply running
 
 `moracle`'s db can also be initialized or updated by supplying a database file, either in json format or as a zip file containing the file 'AllCards.json'.
 
-    ~/tmp $ curl -O 'https://mtgjson.com/json/AllCards.json.zip'
+    ~/tmp $ curl -O 'https://mtgjson.com/api/v5/AtomicCards.json.zip'
       % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                      Dload  Upload   Total   Spent    Left  Speed
     100 21.0M  100 21.0M    0     0  1503k      0  0:00:14  0:00:14 --:--:-- 2352k
-    ~/tmp $ PYTHONPATH=~/src python3 -m moracle -u AllCards.json.zip
+    ~/tmp $ PYTHONPATH=~/src python3 -m moracle -u AtomicCards.json.zip
     Internal database updated from file "AllCards.json.zip".
 
 You'll need to do this before you can use `moracle`.
