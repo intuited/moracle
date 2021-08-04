@@ -106,8 +106,8 @@ class TestFormat(TestCase):
 
 class TestDBLoad(TestCase):
     def setUp(self):
-        self.json = '[{"1": "one"}, {"2": "two"}, {"3": "three"}]'
-        self.correct_db = [{'1': "one"}, {'2': "two"}, {'3': "three"}]
+        self.json = '{"a": {"1": "one"}, "b": {"2": "two"}, "c": {"3": "three"}}'
+        self.correct_db = {'a': {'1': "one"}, 'b': {'2': "two"}, 'c': {'3': "three"}}
 
     def test_json_file(self):
         from tempfile import mkstemp
@@ -130,7 +130,7 @@ class TestDBLoad(TestCase):
         fd, filename = mkstemp(suffix='.zip')
         try:
             with ZipFile(filename, mode='w') as z:
-                z.writestr(moracle.DB_ZIP_CONTENT, self.json)
+                z.writestr('testfile.json', self.json)
             db = moracle.load_db(filename)
             self.assertEqual(db, self.correct_db)
         finally:
@@ -154,7 +154,7 @@ class TestDBLoad(TestCase):
 
         buff = BytesIO()
         with ZipFile(buff, 'w') as z:
-            z.writestr(moracle.DB_ZIP_CONTENT, self.json)
+            z.writestr('testfile.json', self.json)
 
         with responses.RequestsMock() as res:
             res.add(responses.GET, 'https://mtgjson.com/json/AllCards.json.zip',
