@@ -180,7 +180,12 @@ def lookup_full(db, string):
     try:
         return db[string.lower()]
     except KeyError:
-        return None
+        # check for dual-faced cards
+        dual_faced = lookup_start(db, string + ' // ')
+        if dual_faced:
+            return list(dual_faced.values())[0]
+        else:
+            return None
 
 def lookup_start(db, string):
     return dict((key, value) for key, value in db.items()
