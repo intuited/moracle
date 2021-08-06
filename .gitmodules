@@ -1,0 +1,3 @@
+[submodule "sf_price_fetcher"]
+	path = sf_price_fetcher
+	url = git@github.com:intuited/sf_price_fetcher.git
