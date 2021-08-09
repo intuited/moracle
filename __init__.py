@@ -11,6 +11,7 @@ L is a planeswalker's Loyalty
 RULES is the rules text
 """
 from os import path
+import sf_price_fetcher
 
 INSTALL_DIR = path.dirname(path.abspath(__file__))
 DEFAULT_DB_LOCATION = INSTALL_DIR + "/AllCards.json"
@@ -92,7 +93,7 @@ def abbrev_manacost(cost):
     from re import sub
     return sub(r'\{([0-9]+|[A-Z])\}', r'\1', cost)
 
-def format_oneline(card, maxwidth=0):
+def format_oneline(card, maxwidth=0, fetch_price=False):
     """Format the card data for a 1-line presentation.
 
     The result is cropped at a maximum of `maxwidth` characters.
@@ -111,6 +112,10 @@ def format_oneline(card, maxwidth=0):
 
     if 'text' in card.keys():
         components.append(card['text'].replace('\n', '\t'))
+
+    if fetch_price:
+        price = sf_price_fetcher.fetcher.get(card['name'])
+        components.append(f'SF${price}')
 
     result = ' '.join(components)
 
